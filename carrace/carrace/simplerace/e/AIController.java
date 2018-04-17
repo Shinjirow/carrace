@@ -5,28 +5,55 @@ public class AIController implements Controller, Constants {
 
     private double targetAngle;
 
-    private int stats = 0;
+    private double targetDistance;
 
-    long fl=0;
+    private Vector2d nextWaypoint;
+
+    private double brakingPoint;
 
     public void reset(){}
 
     public int control (SensorModel inputs) {
+        int command = neutral;
 
-        System.out.println("f = "+ fl + ", Speed = " + inputs.getSpeed());
-
-        int command=neutral;
-
-        if(stats==0){
-            command=forward;
-            if(inputs.getSpeed()>10.0) this.stats=1;
-        }else if(stats == 1){
-            command=backward;
-            if(inputs.getSpeed()<0.0) this.stats=2;
+        this.targetAngle = inputs.getAngleToNextWaypoint();
+        this.targetDistance = inputs.getDistanceToNextWaypoint();
+        if(!eq(this.nextWaypoint, inputs.getNextWaypointPosition())){
+            //System.out.println("summon");
+            this.nextWaypoint = inputs.getNextWaypointPosition();
+            this.brakingPoint = inputs.getDistanceToNextWaypoint() * 0.20;
         }
 
-        fl++;
+        //System.out.println(brakingPoint);
+
+        //System.out.println(this.targetDistance);
+
+
+        if(this.targetAngle > 0){
+            command = backwardleft;
+
+            if(this.targetDistance < this.brakingPoint){
+                command = forwardleft;
+            }
+        }else{
+            command = backwardright;
+
+            if(this.targetDistance < this.brakingPoint){
+                command = forwardright;
+            }
+        }
 
         return command;
+    }
+
+    public boolean eq(Vector2d a, Vector2d b){
+        if(a == null || b == null) return false;
+
+        if(a == b) return true;
+        if(a.equals(b)) return true;
+
+        if(a.x == b.x && a.y == b.y) return true;
+
+        return false;
     }
 }
