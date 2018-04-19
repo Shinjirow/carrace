@@ -2,100 +2,123 @@ package simplerace.e;
 import simplerace.*;
 
 /**
- * Todo: min0対策
- * 案1 旗1と旗2の距離が近い場合、回り込んで旗を取るようにする
- * 実装方法 仮の旗を立てて、そこに向かわせる
- *
+ * AIControler
  */
 
 public class AIController implements Controller, Constants {
 
+    /**
+     * デバッグ用変数
+     * メインプログラムで1フレームごとに500msの空白を与えるので、
+     * 考える時間が稼げる
+     */
     private final boolean DEBUG = false;
 
-    private double targetAngle;
-
-    private double targetDistance;
-
+    /**
+     * コーナーに進入する際の目標速度が代入されるフィールド.
+     */
     private double targetSpeed;
 
     /**
-     * 自分、1旗、2旗のangle 0 ~ pi
+     * 自分、1旗、2旗のangle
+     * 0 <= angle <= pi
      */
     private double angle;
 
     /**
-     * angleの2乗 0 ~ pi*pi
+     * angleの2乗
+     * 0 <= angle <= pi*pi
      */
     private double anglePow;
 
+    /**
+     * 仮設旗を束縛するフィールド.
+     */
     private Vector2d fakeWaypoint;
 
+    /**
+     * 仮設旗との角度が代入されるフィールド.
+     */
     private double fakeAngle;
 
+    /**
+     * コーナーに進入するための減速地点が代入されるフィールド.
+     */
     private double brakingPoint;
 
+    /**
+     * 高江洲が作った統計を取る用の変数を束縛するフィールド.
+     */
     private Analyst analyst;
 
+    /**
+     * Math.PIの2乗 angleの2乗に比例させたいが大きくなりすぎるために作ったはず
+     */
     private final double pipi = Math.PI * Math.PI;
 
+    /**
+     * バックでbackwardleftとかを押しっぱなしにして収束する旋回速度
+     * ここを最低速度としてあらゆる行動を行う
+     */
     private final double defTurnSpeed = -2.564335;
 
+    /**
+     * 当たり判定の距離を対角線で割った値
+     * getDistanceシリーズは対角線で割った値が求められるので作った
+     */
     private final double collideDetection = 20.0/Math.sqrt(320000.0D);
 
-    private double dis = 0.206;
-
+    /**
+     * コンストラクタ.
+     * 使われないらしい
+     */
     public AIController(){
         this.analyst = new Analyst();
 
         return;
     }
 
+    /**
+     * Controllerをimplementする際に必要なメソッド.
+     * 統計処理を行うAnalystをここでnewする
+     */
     public void reset(){
         this.analyst = new Analyst();
     }
 
 
     /**
-     * フィールドを埋める
+     * そのターンでの行動を決めるのに最低限必要なフィールドを埋める
      * @param inputs センサ情報
      */
     private void setField(SensorModel inputs){
-        this.targetAngle = inputs.getAngleToNextWaypoint();
-        this.targetDistance = inputs.getDistanceToNextWaypoint();
-
         this.angle = this.getRadians(inputs);
-        //System.err.println("angle " + Math.toDegrees(angle));
         this.anglePow = this.angle*this.angle;
         this.targetSpeed = this.defTurnSpeed * (anglePow/2.0 + 1.0);
-        //System.err.println("tgtspeed      " + this.targetSpeed);
-        /*
-        if(!eq(this.nextWaypoint, inputs.getNextWaypointPosition())){
-            this.setBrakingPoint(inputs);
-        }
-        */
 
         return;
     }
 
     /**
-     * ブレーキングポイントを決める 今使っていません
-     * @param inputs
-     */
-    private void setBrakingPoint(SensorModel inputs){
-        double angle3 = (anglePow/pipi) * this.dis;
-        //System.err.println("angle         " + Math.toDegrees(angle));
-
-        this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle3) + this.collideDetection;
-        //System.err.println("brkpoint    " + this.brakingPoint);
-        //System.err.println("raw         " + inputs.getDistanceToNextWaypoint());
-        //System.err.println("speed         " + inputs.getSpeed());
-        //System.err.println("dis - angle " + (this.dis - angle));
-    }
-
-    /**
      * isAbleToBrake 今からブレーキして目標速度まで落とすと止まり切れるか返す
-     * @param inputs
-     * @return
+     *
+     * 　　n      ♪キボウノハナー
+     *　 _H
+     *　巛 ｸ　 ノﾚzz　　　　　　　　俺は止まんねえからよ...
+     *　 F｜　幺 ﾐwｯﾐ
+     *　｜｜　ヽﾚvvｲ             お前らが止まんねえ限り、
+     *　｜ ￣⌒＼二ヽ＿
+     *　 ￣￣Ｙ　ミ　 /|       俺はその先にいるぞ！！！！！
+     *　　　 ｜　 |　｜|
+     *　　　 /　　|　｜|
+     *　　　/　　 |　 L|           だからよ...
+     *　　　＼＿_/|＿/(ヽ
+     *　　　 ｜　　 ｜/ぐ)
+     *　　　 ｜　 ﾊ ∧＼≫        止まるんじゃねえぞ...
+     *　　　 ｜　/ Ｖ∧
+     *　　　 ｜ ｜　Ｖ｜
+     * @param inputs センサ情報
+     * @return true 止まり切れる : false 止まり切れない(ブレーキしなさい)
      */
     private boolean isAbleToBrake(SensorModel inputs){
         double finPoint = (inputs.getDistanceToNextWaypoint() - this.collideDetection) * Math.sqrt(320000.0D);
@@ -110,9 +133,6 @@ public class AIController implements Controller, Constants {
             speed += 0.425;
         }
 
-        //System.err.println("nokori kyori  " + finPoint);
-        //System.err.println("brakeDistance " + distance);
-
         if(distance > finPoint) return false;
 
         return true;
@@ -120,32 +140,30 @@ public class AIController implements Controller, Constants {
 
     /**
      * 自身、一つ目の旗、二つ目の旗の角度を求める
-     * 偽旗で角度を出すように
-     * @param inputs
-     * @return
+     *
+     * 4/19 偽旗で角度を出すように変更
+     * @param inputs センサ情報
+     * @return -PI ~ PIの値の範囲で角度
      */
     private double getRadians(SensorModel inputs){
         Vector2d A = inputs.getPosition();
-        Vector2d B = /*inputs.getNextWaypointPosition()*/ this.fakeWaypoint;
+        Vector2d B = this.fakeWaypoint;
         Vector2d C = inputs.getNextNextWaypointPosition();
         Vector2d BA = new Vector2d(A.x - B.x, A.y - B.y);
         Vector2d BC = new Vector2d(C.x - B.x, C.y - B.y);
-        //System.out.println(BA);
-        //System.out.println(BC);
-        //System.err.println("A " + A);
-        //System.err.println("B " + B);
-        //System.err.println("C " + C);
+
         double cosB = (BA.x*BC.x+BC.y*BA.y)/((Math.sqrt(Math.pow(BA.x,2.0)+Math.pow(BA.y,2.0)))*(Math.sqrt(Math.pow(BC.x,2.0)+Math.pow(BC.y,2.0))));
-        //System.err.println(Math.acos(cosB));
+
         double rad = Math.acos(cosB);
-        //System.err.println("deg " + Math.toDegrees(rad));
 
         return (rad > Math.PI) ? (Math.PI - rad) : rad;
     }
 
+
     /**
-     * 偽の点を作る 0.47 21.846
-     *
+     * 偽の旗を生成する
+     * @param inputs センサ情報
+     * @return 偽の旗
      */
     private Vector2d createFakeWaypoint(SensorModel inputs){
         Vector2d T1 = inputs.getNextWaypointPosition();
@@ -155,36 +173,25 @@ public class AIController implements Controller, Constants {
         double radian = Math.atan2(T2.y - T1.y,T2.x - T1.x);
         double distance = inputs.getDistanceToNextWaypoint()*Math.sqrt(320000.0D);
 
-        double x = 1.0/(T1T2Distance/Math.sqrt(320000.0D)) / 2.0;
-        Vector2d fakePoint = new Vector2d(T1.x - (Math.cos(radian) * distance * 0.47) + (Math.cos(radian)*20.0),
-                                           T1.y - (Math.sin(radian) * distance * 0.47) + (Math.sin(radian)*20.0));
-
-        //System.err.println("BDistance   = " + T1T2Distance/Math.sqrt(320000.0D));
-        //System.err.println("angle     = " + Math.toDegrees(radian));
-        //System.err.println("x         = " + x);
-        //System.err.println("T1Point   = " + T1);
-        //System.err.println("fakePoint = " + fakePoint);
-        //System.err.println("diff      = " + Math.abs(fakePoint.x - T1.x) + ", " + Math.abs(fakePoint.y - T1.y));
-        //System.err.println("diffDist  = " + Math.sqrt((fakePoint.x - T1.x) * (fakePoint.x - T1.x) + (fakePoint.y - T1.y) * (fakePoint.y - T1.y)));
+        Vector2d fakePoint = new Vector2d(T1.x - (Math.cos(radian) * distance*distance/143.75 * 0.47) + (Math.cos(radian)*20.0),
+                                           T1.y - (Math.sin(radian) * distance*distance/143.75 * 0.47) + (Math.sin(radian)*20.0));
 
         return fakePoint;
     }
-    
+
+    /**
+     * 偽旗との角度を求める
+     * @param inputs センサ情報
+     * @return 角度
+     */
     private double getAngleToFakeWaypoint(SensorModel inputs){
         Vector2d nextWp = this.fakeWaypoint;
         Vector2d position = inputs.getPosition();
-        double xDiff = nextWp.x - position.x;
-        double yDiff = nextWp.y - position.y;
-        double angle = Math.atan2(yDiff, xDiff);
+        double angle = Math.atan2(nextWp.y - position.y, nextWp.x - position.x);
         angle = inputs.getOrientation() - angle;
 
-        while(angle < -3.141592653589793D) {
-            angle += 6.283185307179586D;
-        }
-
-        while(angle > 3.141592653589793D) {
-            angle -= 6.283185307179586D;
-        }
+        while(angle < -3.141592653589793D) angle += 6.283185307179586D;
+        while(angle > 3.141592653589793D) angle -= 6.283185307179586D;
 
         return angle;
     }
@@ -207,9 +214,13 @@ public class AIController implements Controller, Constants {
      *      減速方式を変えた isAbleToBrakeで判定するように 19.3
      *      isAbleToBrakeのシミュレート精度の改善 19.45
      *
-     *      回り込んで旗を取れるようにした 20.3
+     *      仮想的に旗を設置し、そちらを追うことで回り込んで旗を取れるようにした 20.3
      *
      *      インベタで走るコードがバグってたので修正 21.84
+     *
+     * 4/20 旗の設置方法を距離の2乗に比例するようにした 22.18
+     *
+     *      各種変数の最適化 22.5
      *
      * @param inputs センサ情報
      * @return 操縦コマンド
@@ -219,52 +230,25 @@ public class AIController implements Controller, Constants {
         this.turnStartProcess(inputs);
 
         this.fakeWaypoint = this.createFakeWaypoint(inputs);
-
         this.fakeAngle = this.getAngleToFakeWaypoint(inputs);
 
         int command;
 
         this.setField(inputs);
 
-        //System.err.println(brakingPoint); //減速地点
-        //System.err.println(this.targetDistance); //距離
-        //System.err.println(inputs.getSpeed());   //スピード
-        //System.err.println(this.targetAngle); //角度
-
         if(this.fakeAngle > 0){
             command = backwardleft;
 
-            if(this.fakeAngle > 3.10) command = backward;
+            if(this.fakeAngle > 3.00) command = backward;
 
-            if(!isAbleToBrake(inputs)){
-                command = forwardleft;
-                //System.err.println("speed " + inputs.getSpeed());
-            }
-            /*
-            if(this.targetDistance < this.brakingPoint){
-                command = forwardleft;
-                if(inputs.getSpeed() > this.defTurnSpeed){
-                    command = backwardleft;
-                }
-            }
-            */
+            if(!isAbleToBrake(inputs)) command = forwardleft;
+
         }else{
             command = backwardright;
 
-            if(this.fakeAngle < -3.10) command = backward;
+            if(this.fakeAngle < -3.00) command = backward;
 
-            if(!isAbleToBrake(inputs)) {
-                command = forwardright;
-                //System.err.println("speed " + inputs.getSpeed());
-            }
-            /*
-            if(this.targetDistance < this.brakingPoint){
-                command = forwardright;
-                if(inputs.getSpeed() > this.defTurnSpeed){
-                    command = backwardright;
-                }
-            }
-            */
+            if(!isAbleToBrake(inputs)) command = forwardright;
         }
 
         if(DEBUG){
