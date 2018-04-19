@@ -47,11 +47,6 @@ public class AIController implements Controller, Constants {
     private double brakingPoint;
 
     /**
-     * 高江洲が作った統計を取る用の変数を束縛するフィールド.
-     */
-    private Analyst analyst;
-
-    /**
      * Math.PIの2乗 angleの2乗に比例させたいが大きくなりすぎるために作ったはず
      */
     private final double pipi = Math.PI * Math.PI;
@@ -73,17 +68,14 @@ public class AIController implements Controller, Constants {
      * 使われないらしい
      */
     public AIController(){
-        this.analyst = new Analyst();
 
         return;
     }
 
     /**
      * Controllerをimplementする際に必要なメソッド.
-     * 統計処理を行うAnalystをここでnewする
      */
     public void reset(){
-        this.analyst = new Analyst();
     }
 
 
@@ -227,8 +219,6 @@ public class AIController implements Controller, Constants {
      */
     public int control (SensorModel inputs) {
 
-        this.turnStartProcess(inputs);
-
         this.fakeWaypoint = this.createFakeWaypoint(inputs);
         this.fakeAngle = this.getAngleToFakeWaypoint(inputs);
 
@@ -259,8 +249,6 @@ public class AIController implements Controller, Constants {
             }
         }
 
-        this.turnEndProcess();
-
         return command;
     }
 
@@ -281,30 +269,5 @@ public class AIController implements Controller, Constants {
         return false;
     }
 
-    /**
-     * ターン開始時に行う操作
-     * @author takaesumizuki
-     */
-    private void turnStartProcess(SensorModel inputs) {
-        this.analyst.update(inputs); /* 統計情報をとる */
-
-        return;
-    }
-
-    /**
-     * ターン終了時に行う操作
-     * @author takaesumizuki
-     */
-    private void turnEndProcess() {
-        // this.analyst.printResult(); /* ターンごとの結果を表示したくないならコメントアウトしてください */
-        if (this.analyst.isLastTurn()) {
-            // this.analyst.printResult(); /* ゲームごと(ラウンドごと)の結果を表示したくないならコメントアウトしてください */
-            if (this.analyst.isFinalRound()) {
-                this.analyst.finalRoundProcess();/* 最終結果を表示したくないならコメントアウトしてください*/
-            }
-        }
-
-        return;
-    }
 }
 
