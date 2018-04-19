@@ -3,11 +3,11 @@ import simplerace.*;
 
 public class AIController implements Controller, Constants {
 
-    private int prevCommand;
-
     private double targetAngle;
 
     private double targetDistance;
+
+    private double targetSpeed;
 
     private Vector2d nextWaypoint;
 
@@ -18,6 +18,8 @@ public class AIController implements Controller, Constants {
     private final double pipi = Math.PI * Math.PI;
 
     private final double defTurnSpeed = -2.564335;
+
+    private final double collideDetection = 20.0/Math.sqrt(320000.0D);
 
     private double dis = 0.206;
 
@@ -53,15 +55,44 @@ public class AIController implements Controller, Constants {
     private void setBrakingPoint(SensorModel inputs){
         double angle = this.getRadians(inputs);
         //System.err.println("angle " + Math.toDegrees(angle));
-        angle = angle*angle;
-        angle = (angle/pipi) * this.dis;
-        //System.err.println("summon");
+        double angle2 = angle*angle;
+        double angle3 = (angle2/pipi) * this.dis;
+        System.err.println("angle " + Math.toDegrees(angle));
+        this.targetSpeed = this.defTurnSpeed * (angle2 + 1.0);
+        System.err.println("tgtspeed " + this.targetSpeed);
+
         this.nextWaypoint = inputs.getNextWaypointPosition();
-        this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle) + 20.0/Math.sqrt(320000.0D);
+        this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle3) + this.collideDetection;
         //System.err.println("brkpoint " + this.brakingPoint);
         //System.err.println("raw " + inputs.getDistanceToNextWaypoint());
         //System.err.println("speed " + inputs.getSpeed());
         //System.err.println("dis - angle " + (this.dis - angle));
+    }
+
+    /**
+     * isAbleToBrake 今からブレーキして目標速度まで落とすと止まり切れるか返す
+     * @param inputs
+     * @return
+     */
+    private boolean isAbleToBrake(SensorModel inputs){
+        double finPoint = (inputs.getDistanceToNextWaypoint() - this.collideDetection) * Math.sqrt(320000.0D);
+        double speed = inputs.getSpeed();
+        double distance = 0;
+
+        if(this.targetSpeed < speed) return true;
+
+        while(true){
+            if(speed >= this.targetSpeed) break;
+            distance -= speed;
+            speed += 0.4;
+        }
+
+        System.err.println("nokori kyori  " + finPoint);
+        System.err.println("brakeDistance " + distance);
+
+        if(distance > finPoint) return false;
+
+        return true;
     }
 
     /**
@@ -118,6 +149,7 @@ public class AIController implements Controller, Constants {
         //System.err.println(this.targetDistance); //距離
         //System.err.println(inputs.getSpeed());   //スピード
         //System.err.println(this.targetAngle); //角度
+        isAbleToBrake(inputs);
 
         if(this.targetAngle > 0){
             command = backwardleft;
@@ -142,8 +174,6 @@ public class AIController implements Controller, Constants {
                 }
             }
         }
-
-        this.prevCommand = command;
 
         this.turnEndProcess();
 
