@@ -2,12 +2,15 @@ package simplerace.e;
 import simplerace.*;
 
 /**
- * Todo 曲がり切った後にターゲットを設定すべき
- * 旗取った時と曲がり切った時では角度がぜんぜん違う
+ * Todo: min0対策
+ * 案1 旗1と旗2の距離が近い場合、回り込んで旗を取るようにする
+ * 実装方法 仮の旗を立てて、そこに向かわせる
  *
  */
 
 public class AIController implements Controller, Constants {
+
+    private final boolean DEBUG = false;
 
     private double targetAngle;
 
@@ -25,7 +28,9 @@ public class AIController implements Controller, Constants {
      */
     private double anglePow;
 
-    private Vector2d nextWaypoint;
+    private Vector2d fakeWaypoint;
+
+    private double fakeAngle;
 
     private double brakingPoint;
 
@@ -63,22 +68,23 @@ public class AIController implements Controller, Constants {
         this.anglePow = this.angle*this.angle;
         this.targetSpeed = this.defTurnSpeed * (anglePow/2.0 + 1.0);
         //System.err.println("tgtspeed      " + this.targetSpeed);
+        /*
         if(!eq(this.nextWaypoint, inputs.getNextWaypointPosition())){
             this.setBrakingPoint(inputs);
         }
+        */
 
         return;
     }
 
     /**
-     * ブレーキングポイントを決める
+     * ブレーキングポイントを決める 今使っていません
      * @param inputs
      */
     private void setBrakingPoint(SensorModel inputs){
         double angle3 = (anglePow/pipi) * this.dis;
         //System.err.println("angle         " + Math.toDegrees(angle));
 
-        this.nextWaypoint = inputs.getNextWaypointPosition();
         this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle3) + this.collideDetection;
         //System.err.println("brkpoint    " + this.brakingPoint);
         //System.err.println("raw         " + inputs.getDistanceToNextWaypoint());
@@ -114,12 +120,13 @@ public class AIController implements Controller, Constants {
 
     /**
      * 自身、一つ目の旗、二つ目の旗の角度を求める
+     * 偽旗で角度を出すように
      * @param inputs
      * @return
      */
     private double getRadians(SensorModel inputs){
         Vector2d A = inputs.getPosition();
-        Vector2d B = inputs.getNextWaypointPosition();
+        Vector2d B = /*inputs.getNextWaypointPosition()*/ this.fakeWaypoint;
         Vector2d C = inputs.getNextNextWaypointPosition();
         Vector2d BA = new Vector2d(A.x - B.x, A.y - B.y);
         Vector2d BC = new Vector2d(C.x - B.x, C.y - B.y);
@@ -134,6 +141,51 @@ public class AIController implements Controller, Constants {
         //System.err.println("deg " + Math.toDegrees(rad));
 
         return (rad > Math.PI) ? (Math.PI - rad) : rad;
+    }
+
+    /**
+     * 偽の点を作る
+     */
+    private Vector2d createFakeWaypoint(SensorModel inputs){
+        Vector2d T1 = inputs.getNextWaypointPosition();
+        Vector2d T2 = inputs.getNextNextWaypointPosition();
+
+        double T1T2Distance = Math.sqrt((T2.x - T1.x) * (T2.x - T1.x) + (T2.y - T1.y) * (T2.y - T1.y));
+        double radian = Math.atan2(T2.y - T1.y,T2.x - T1.x);
+        double distance = inputs.getDistanceToNextWaypoint()*Math.sqrt(320000.0D);
+
+        double x = 1.0/(T1T2Distance/Math.sqrt(320000.0D)) / 2.0;
+        Vector2d fakePoint = new Vector2d(T1.x - (Math.cos(radian) * distance * 0.35) + (Math.cos(radian)*this.collideDetection),
+                                           T1.y - (Math.sin(radian) * distance * 0.35) + (Math.sin(radian)*this.collideDetection));
+
+        //System.err.println("BDistance   = " + T1T2Distance/Math.sqrt(320000.0D));
+        //System.err.println("angle     = " + Math.toDegrees(radian));
+        //System.err.println("x         = " + x);
+        //System.err.println("T1Point   = " + T1);
+        //System.err.println("fakePoint = " + fakePoint);
+        //System.err.println("diff      = " + Math.abs(fakePoint.x - T1.x) + ", " + Math.abs(fakePoint.y - T1.y));
+        //System.err.println("diffDist  = " + Math.sqrt((fakePoint.x - T1.x) * (fakePoint.x - T1.x) + (fakePoint.y - T1.y) * (fakePoint.y - T1.y)));
+
+        return fakePoint;
+    }
+    
+    private double getAngleToFakeWaypoint(SensorModel inputs){
+        Vector2d nextWp = this.fakeWaypoint;
+        Vector2d position = inputs.getPosition();
+        double xDiff = nextWp.x - position.x;
+        double yDiff = nextWp.y - position.y;
+        double angle = Math.atan2(yDiff, xDiff);
+        angle = inputs.getOrientation() - angle;
+
+        while(angle < -3.141592653589793D) {
+            angle += 6.283185307179586D;
+        }
+
+        while(angle > 3.141592653589793D) {
+            angle -= 6.283185307179586D;
+        }
+
+        return angle;
     }
 
     /**
@@ -154,12 +206,18 @@ public class AIController implements Controller, Constants {
      *      減速方式を変えた isAbleToBrakeで判定するように 19.3
      *      isAbleToBrakeのシミュレート精度の改善 19.45
      *
+     *      回り込んで旗を取れるようにした 20.3
+     *
      * @param inputs センサ情報
      * @return 操縦コマンド
      */
     public int control (SensorModel inputs) {
 
         this.turnStartProcess(inputs);
+
+        this.fakeWaypoint = this.createFakeWaypoint(inputs);
+
+        this.fakeAngle = this.getAngleToFakeWaypoint(inputs);
 
         int command;
 
@@ -170,10 +228,10 @@ public class AIController implements Controller, Constants {
         //System.err.println(inputs.getSpeed());   //スピード
         //System.err.println(this.targetAngle); //角度
 
-        if(this.targetAngle > 0){
+        if(this.fakeAngle > 0){
             command = backwardleft;
 
-            if(this.targetAngle > 3.00) command = backward;
+            if(this.fakeAngle > 3.10) command = backward;
 
             if(!isAbleToBrake(inputs)){
                 command = forwardleft;
@@ -190,7 +248,7 @@ public class AIController implements Controller, Constants {
         }else{
             command = backwardright;
 
-            if(this.targetAngle < -3.00) command = backward;
+            if(this.fakeAngle < -3.10) command = backward;
 
             if(!isAbleToBrake(inputs)) {
                 command = forwardright;
@@ -204,6 +262,14 @@ public class AIController implements Controller, Constants {
                 }
             }
             */
+        }
+
+        if(DEBUG){
+            try{
+                Thread.sleep(500);
+            }catch(InterruptedException exception){
+                exception.printStackTrace();
+            }
         }
 
         this.turnEndProcess();
