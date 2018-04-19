@@ -1,6 +1,12 @@
 package simplerace.e;
 import simplerace.*;
 
+/**
+ * Todo 曲がり切った後にターゲットを設定すべき
+ * 旗取った時と曲がり切った時では角度がぜんぜん違う
+ *
+ */
+
 public class AIController implements Controller, Constants {
 
     private double targetAngle;
@@ -8,6 +14,16 @@ public class AIController implements Controller, Constants {
     private double targetDistance;
 
     private double targetSpeed;
+
+    /**
+     * 自分、1旗、2旗のangle 0 ~ pi
+     */
+    private double angle;
+
+    /**
+     * angleの2乗 0 ~ pi*pi
+     */
+    private double anglePow;
 
     private Vector2d nextWaypoint;
 
@@ -41,6 +57,12 @@ public class AIController implements Controller, Constants {
     private void setField(SensorModel inputs){
         this.targetAngle = inputs.getAngleToNextWaypoint();
         this.targetDistance = inputs.getDistanceToNextWaypoint();
+
+        this.angle = this.getRadians(inputs);
+        //System.err.println("angle " + Math.toDegrees(angle));
+        this.anglePow = this.angle*this.angle;
+        this.targetSpeed = this.defTurnSpeed * (anglePow/2.0 + 1.0);
+        //System.err.println("tgtspeed      " + this.targetSpeed);
         if(!eq(this.nextWaypoint, inputs.getNextWaypointPosition())){
             this.setBrakingPoint(inputs);
         }
@@ -53,19 +75,14 @@ public class AIController implements Controller, Constants {
      * @param inputs
      */
     private void setBrakingPoint(SensorModel inputs){
-        double angle = this.getRadians(inputs);
-        //System.err.println("angle " + Math.toDegrees(angle));
-        double angle2 = angle*angle;
-        double angle3 = (angle2/pipi) * this.dis;
-        System.err.println("angle " + Math.toDegrees(angle));
-        this.targetSpeed = this.defTurnSpeed * (angle2 + 1.0);
-        System.err.println("tgtspeed " + this.targetSpeed);
+        double angle3 = (anglePow/pipi) * this.dis;
+        //System.err.println("angle         " + Math.toDegrees(angle));
 
         this.nextWaypoint = inputs.getNextWaypointPosition();
         this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle3) + this.collideDetection;
-        //System.err.println("brkpoint " + this.brakingPoint);
-        //System.err.println("raw " + inputs.getDistanceToNextWaypoint());
-        //System.err.println("speed " + inputs.getSpeed());
+        //System.err.println("brkpoint    " + this.brakingPoint);
+        //System.err.println("raw         " + inputs.getDistanceToNextWaypoint());
+        //System.err.println("speed         " + inputs.getSpeed());
         //System.err.println("dis - angle " + (this.dis - angle));
     }
 
@@ -84,11 +101,11 @@ public class AIController implements Controller, Constants {
         while(true){
             if(speed >= this.targetSpeed) break;
             distance -= speed;
-            speed += 0.4;
+            speed += 0.425;
         }
 
-        System.err.println("nokori kyori  " + finPoint);
-        System.err.println("brakeDistance " + distance);
+        //System.err.println("nokori kyori  " + finPoint);
+        //System.err.println("brakeDistance " + distance);
 
         if(distance > finPoint) return false;
 
@@ -134,6 +151,9 @@ public class AIController implements Controller, Constants {
      *
      * 4/19 最低限減速に必要な距離を与えた 19.0
      *
+     *      減速方式を変えた isAbleToBrakeで判定するように 19.3
+     *      isAbleToBrakeのシミュレート精度の改善 19.45
+     *
      * @param inputs センサ情報
      * @return 操縦コマンド
      */
@@ -149,30 +169,41 @@ public class AIController implements Controller, Constants {
         //System.err.println(this.targetDistance); //距離
         //System.err.println(inputs.getSpeed());   //スピード
         //System.err.println(this.targetAngle); //角度
-        isAbleToBrake(inputs);
 
         if(this.targetAngle > 0){
             command = backwardleft;
 
             if(this.targetAngle > 3.00) command = backward;
 
+            if(!isAbleToBrake(inputs)){
+                command = forwardleft;
+                //System.err.println("speed " + inputs.getSpeed());
+            }
+            /*
             if(this.targetDistance < this.brakingPoint){
                 command = forwardleft;
                 if(inputs.getSpeed() > this.defTurnSpeed){
                     command = backwardleft;
                 }
             }
+            */
         }else{
             command = backwardright;
 
             if(this.targetAngle < -3.00) command = backward;
 
+            if(!isAbleToBrake(inputs)) {
+                command = forwardright;
+                //System.err.println("speed " + inputs.getSpeed());
+            }
+            /*
             if(this.targetDistance < this.brakingPoint){
                 command = forwardright;
                 if(inputs.getSpeed() > this.defTurnSpeed){
                     command = backwardright;
                 }
             }
+            */
         }
 
         this.turnEndProcess();
