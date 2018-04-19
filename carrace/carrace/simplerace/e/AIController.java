@@ -144,7 +144,8 @@ public class AIController implements Controller, Constants {
     }
 
     /**
-     * 偽の点を作る
+     * 偽の点を作る 0.47 21.846
+     *
      */
     private Vector2d createFakeWaypoint(SensorModel inputs){
         Vector2d T1 = inputs.getNextWaypointPosition();
@@ -155,8 +156,8 @@ public class AIController implements Controller, Constants {
         double distance = inputs.getDistanceToNextWaypoint()*Math.sqrt(320000.0D);
 
         double x = 1.0/(T1T2Distance/Math.sqrt(320000.0D)) / 2.0;
-        Vector2d fakePoint = new Vector2d(T1.x - (Math.cos(radian) * distance * 0.35) + (Math.cos(radian)*this.collideDetection),
-                                           T1.y - (Math.sin(radian) * distance * 0.35) + (Math.sin(radian)*this.collideDetection));
+        Vector2d fakePoint = new Vector2d(T1.x - (Math.cos(radian) * distance * 0.47) + (Math.cos(radian)*20.0),
+                                           T1.y - (Math.sin(radian) * distance * 0.47) + (Math.sin(radian)*20.0));
 
         //System.err.println("BDistance   = " + T1T2Distance/Math.sqrt(320000.0D));
         //System.err.println("angle     = " + Math.toDegrees(radian));
@@ -207,6 +208,8 @@ public class AIController implements Controller, Constants {
      *      isAbleToBrakeのシミュレート精度の改善 19.45
      *
      *      回り込んで旗を取れるようにした 20.3
+     *
+     *      インベタで走るコードがバグってたので修正 21.84
      *
      * @param inputs センサ情報
      * @return 操縦コマンド
