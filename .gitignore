@@ -1,2 +1,6 @@
 .idea
 *.class
+.DS_Store
+null
+results.txt
+
