@@ -29,3 +29,6 @@ help:
 
 stats:
 	${J} simplerace.Stats ${AIPROGRAM}
+
+bigstats:
+	sh loop.sh
