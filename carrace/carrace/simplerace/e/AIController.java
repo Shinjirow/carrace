@@ -102,12 +102,12 @@ public class AIController implements Controller, Constants {
         double speed = inputs.getSpeed();
         double distance = 0;
 
-        if(this.targetSpeed < speed) return true;
+        if(this.targetSpeed > speed) return true;
 
         while(true){
-            if(speed >= this.targetSpeed) break;
-            distance -= speed;
-            speed += 0.425;
+            if(speed <= this.targetSpeed) break;
+            distance += speed;
+            speed -= 0.2;
         }
 
         //System.err.println("nokori kyori  " + finPoint);
@@ -229,13 +229,13 @@ public class AIController implements Controller, Constants {
         //System.err.println(this.targetAngle); //角度
 
         if(this.fakeAngle > 0){
-            command = backwardleft;
+            command = forwardleft;
 
-            if(this.fakeAngle > 3.10) command = backward;
+            if(this.fakeAngle > 3.00) command = forward;
 
             if(!isAbleToBrake(inputs)){
-                command = forwardleft;
-                //System.err.println("speed " + inputs.getSpeed());
+                command = backwardleft;
+                System.err.println("speed " + inputs.getSpeed());
             }
             /*
             if(this.targetDistance < this.brakingPoint){
@@ -246,13 +246,13 @@ public class AIController implements Controller, Constants {
             }
             */
         }else{
-            command = backwardright;
+            command = forwardright;
 
-            if(this.fakeAngle < -3.10) command = backward;
+            if(this.fakeAngle < -3.00) command = forward;
 
             if(!isAbleToBrake(inputs)) {
                 command = forwardright;
-                //System.err.println("speed " + inputs.getSpeed());
+                System.err.println("speed " + inputs.getSpeed());
             }
             /*
             if(this.targetDistance < this.brakingPoint){
