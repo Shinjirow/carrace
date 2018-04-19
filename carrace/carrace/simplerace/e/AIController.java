@@ -17,7 +17,9 @@ public class AIController implements Controller, Constants {
 
     private final double pipi = Math.PI * Math.PI;
 
-    private double dis = 0.30;
+    private final double defTurnSpeed = -2.564335;
+
+    private double dis = 0.206;
 
     public AIController(){
         this.analyst = new Analyst();
@@ -55,8 +57,9 @@ public class AIController implements Controller, Constants {
         angle = (angle/pipi) * this.dis;
         //System.err.println("summon");
         this.nextWaypoint = inputs.getNextWaypointPosition();
-        this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle);
+        this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle) + 20.0/Math.sqrt(320000.0D);
         //System.err.println("brkpoint " + this.brakingPoint);
+        //System.err.println("raw " + inputs.getDistanceToNextWaypoint());
         //System.err.println(inputs.getSpeed());
         //System.err.println("dis - angle " + (this.dis - angle));
     }
@@ -98,6 +101,9 @@ public class AIController implements Controller, Constants {
      *
      *      必要な旋回角に応じて減速距離が変わるようにした 18.8
      *
+     * 4/19 最低限減速に必要な距離を与えた 19.0
+     *
+     *
      * @param inputs センサ情報
      * @return 操縦コマンド
      */
@@ -121,8 +127,8 @@ public class AIController implements Controller, Constants {
 
             if(this.targetDistance < this.brakingPoint){
                 command = forwardleft;
-                if(inputs.getSpeed() > -3.5){
-                    command = left;
+                if(inputs.getSpeed() > this.defTurnSpeed){
+                    command = backwardleft;
                 }
             }
         }else{
@@ -132,8 +138,8 @@ public class AIController implements Controller, Constants {
 
             if(this.targetDistance < this.brakingPoint){
                 command = forwardright;
-                if(inputs.getSpeed() > -3.5){
-                    command = right;
+                if(inputs.getSpeed() > this.defTurnSpeed){
+                    command = backwardright;
                 }
             }
         }
@@ -181,7 +187,7 @@ public class AIController implements Controller, Constants {
         if (this.analyst.isLastTurn()) {
             // this.analyst.printResult(); /* ゲームごと(ラウンドごと)の結果を表示したくないならコメントアウトしてください */
             if (this.analyst.isFinalRound()) {
-                //this.analyst.finalRoundProcess();/* 最終結果を表示したくないならコメントアウトしてください*/
+                this.analyst.finalRoundProcess();/* 最終結果を表示したくないならコメントアウトしてください*/
             }
         }
 

@@ -2,7 +2,8 @@ make cai; #ここに各自のコンパイルするときのコマンドを書い
 
 for i in `seq 1 50`;
 do
-  make stats; # ここに各自のstatsを取るときのコマンドを書いてね ぼくはこれでstatsが動く
+  echo "$i"
+  make stats > null 2> null; # ここに各自のstatsを取るときのコマンドを書いてね ぼくはこれでstatsが動く
 done;
 
 python analyze.py < results.txt
