@@ -3,6 +3,8 @@ import simplerace.*;
 
 public class AIController implements Controller, Constants {
 
+    private int prevCommand;
+
     private double targetAngle;
 
     private double targetDistance;
@@ -36,19 +38,27 @@ public class AIController implements Controller, Constants {
         this.targetAngle = inputs.getAngleToNextWaypoint();
         this.targetDistance = inputs.getDistanceToNextWaypoint();
         if(!eq(this.nextWaypoint, inputs.getNextWaypointPosition())){
-            double angle = this.getRadians(inputs);
-            //System.err.println("angle " + Math.toDegrees(angle));
-            angle = angle*angle;
-            angle = (angle/pipi) * this.dis;
-            //System.err.println("summon");
-            this.nextWaypoint = inputs.getNextWaypointPosition();
-            this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle);
-            //System.err.println("brkpoint " + this.brakingPoint);
-            //System.err.println(inputs.getSpeed());
-            //System.err.println("dis - angle " + (this.dis - angle));
+            this.setBrakingPoint(inputs);
         }
 
         return;
+    }
+
+    /**
+     * ブレーキングポイントを決める
+     * @param inputs
+     */
+    private void setBrakingPoint(SensorModel inputs){
+        double angle = this.getRadians(inputs);
+        //System.err.println("angle " + Math.toDegrees(angle));
+        angle = angle*angle;
+        angle = (angle/pipi) * this.dis;
+        //System.err.println("summon");
+        this.nextWaypoint = inputs.getNextWaypointPosition();
+        this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle);
+        //System.err.println("brkpoint " + this.brakingPoint);
+        //System.err.println(inputs.getSpeed());
+        //System.err.println("dis - angle " + (this.dis - angle));
     }
 
     /**
@@ -127,6 +137,8 @@ public class AIController implements Controller, Constants {
                 }
             }
         }
+
+        this.prevCommand = command;
 
         this.turnEndProcess();
 
