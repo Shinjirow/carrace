@@ -60,7 +60,7 @@ public class AIController implements Controller, Constants {
         this.brakingPoint = inputs.getDistanceToNextWaypoint() * (this.dis - angle) + 20.0/Math.sqrt(320000.0D);
         //System.err.println("brkpoint " + this.brakingPoint);
         //System.err.println("raw " + inputs.getDistanceToNextWaypoint());
-        //System.err.println(inputs.getSpeed());
+        //System.err.println("speed " + inputs.getSpeed());
         //System.err.println("dis - angle " + (this.dis - angle));
     }
 
@@ -102,7 +102,6 @@ public class AIController implements Controller, Constants {
      *      必要な旋回角に応じて減速距離が変わるようにした 18.8
      *
      * 4/19 最低限減速に必要な距離を与えた 19.0
-     *
      *
      * @param inputs センサ情報
      * @return 操縦コマンド
