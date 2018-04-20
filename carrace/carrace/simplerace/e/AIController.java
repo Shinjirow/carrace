@@ -3,25 +3,17 @@ import simplerace.*;
 
 public class AIController implements Controller, Constants {
 
-    private double targetAngle;
-
-    boolean flag = false;
-
-    Vector2d startpos;
-
     public void reset(){}
 
     public int control (SensorModel inputs) {
 
-        System.out.println("Speed = " + inputs.getSpeed());
+        int command = neutral;
 
-        int command=backward;
-
-        if(!flag) if(inputs.getSpeed() < -10) {flag = true;startpos = inputs.getPosition();}
-
-        if(flag) if(inputs.getSpeed() < 0)command = forward;else command = neutral;
-
-        System.out.println("position = " + inputs.getPosition());
+        if(inputs.getAngleToNextWaypoint() > 0){
+            command = forwardleft;
+        }else{
+            command = forwardright;
+        }
 
         return command;
     }
