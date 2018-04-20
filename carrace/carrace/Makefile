@@ -16,7 +16,7 @@ ct:
 	${JC} ${TESTPROGRAMD}
 
 do:
-	${J} ${MAINPROGRAM} ${AIPROGRAM}
+	${J} ${MAINPROGRAM} ${AIPROGRAM} ${AIPROGRAM}
 
 test:
 	${J} ${MAINPROGRAM} ${TESTPROGRAM}
@@ -28,4 +28,4 @@ help:
 	"test: execute TEST Program"
 
 stats:
-	${J} simplerace.Stats ${AIPROGRAM}
+	${J} simplerace.Stats ${AIPROGRAM} ${AIPROGRAM}
