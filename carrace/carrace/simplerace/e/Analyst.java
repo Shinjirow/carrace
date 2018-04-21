@@ -119,7 +119,7 @@ public class Analyst{
 		private void doLastTurnProcess(){
 			Analyst.s += this.score;
 			this.recordScore();
-			// if(this.isFinalRound()) this.finalRoundProcess();
+			if(this.isFinalRound()) this.finalRoundProcess();
 		}
 
 		// 追記したやつ
