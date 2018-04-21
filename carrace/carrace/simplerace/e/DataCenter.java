@@ -4,6 +4,11 @@ import simplerace.*;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * 2台のAIコントローラの情報を取りもつクラスである.
+ * AIコントローラにgetterをいくつか整備することで、それらから必要な情報を得ている.
+ * それらの情報を元に、2台のコントローラに、次に狙うべき旗を支持する.
+ */
 public class DataCenter extends Object{
 
     /**
@@ -46,15 +51,9 @@ public class DataCenter extends Object{
         return;
     }
 
-    public void println(){
-        for (AIController aController: controllers) {
-            System.out.println(aController.toString() + ", Angle = " + aController.getTargetAngle());
-        }
-    }
-
     /**
      * オペレーションを行う.
-     * @return
+     * @return そのAIが狙うべき旗の情報
      */
     public Vector2d operation(AIController anAIController){
 

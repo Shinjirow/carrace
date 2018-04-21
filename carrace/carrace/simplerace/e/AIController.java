@@ -39,14 +39,23 @@ public class AIController implements Controller, Constants {
      */
     private final double collideDetection = 20.0/Math.sqrt(320000.0D);
 
+    /**
+     * 統計情報を取る
+     */
     private Analyst analyst;
 
+    /**
+     * データセンタに登録されたかを示す
+     */
     private boolean added = false;
 
     public void reset(){
         this.analyst = new Analyst();
     }
 
+    /**
+     * フィールドを埋める
+     */
     private void setField(SensorModel inputs){
         this.inputs = inputs;
 
@@ -130,12 +139,10 @@ public class AIController implements Controller, Constants {
             if(!this.isAbleToBrake()) command = forwardright;
         }
 
-        //System.err.println(inputs.getClass());
-
-        //DataCenter.getSingleton().println();
-
         return command;
     }
+
+    /*-------------------------Analyze------------------------------*/
 
     /**
      * ターン開始時に行う操作
@@ -163,6 +170,8 @@ public class AIController implements Controller, Constants {
         return;
     }
 
+    /*---------------------------getter-----------------------------*/
+
     /**
      * 自身のセンサ情報を返す.
      * @return
@@ -179,10 +188,13 @@ public class AIController implements Controller, Constants {
         return this.targetAngle;
     }
 
+    /*--------------------------------------------------------------*/
+
     /**
      * 自身の文字列を応答する
      * @return 自身の文字列
      */
+    @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
 
@@ -195,6 +207,7 @@ public class AIController implements Controller, Constants {
      * 自身を表すハッシュ値を応答する
      * @return
      */
+    @Override
     public int hashCode(){
 
         return super.hashCode();

@@ -1,9 +1,12 @@
 package simplerace.e;
 import simplerace.*;
 
+/**
+ * カーレースにおける様々な計算をクラスメソッドとして提供するクラスである.
+ */
 public class Calculator extends Object{
 
-    private static final double diagonal = Math.sqrt(320000.0D);
+    public static final double DIAGONAL = Math.sqrt(320000.0D);
 
     public Calculator(){
     }
@@ -35,8 +38,12 @@ public class Calculator extends Object{
         return Utils.correctAngle(angle);
     }
 
+    /**
+     * AIControllerとVector2dとの距離を求める
+     * @return 距離を対角線で割った値
+     */
     public static double getDistanceBetweenCarAndWaypoint(AIController from, Vector2d waypoint){
-        return from.getSensor().getPosition().dist(waypoint) / Calculator.diagonal;
+        return from.getSensor().getPosition().dist(waypoint) / Calculator.DIAGONAL;
     }
 
     /**
