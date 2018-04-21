@@ -12,11 +12,32 @@ import simplerace.*;
 
 public class AIController implements Controller, Constants {
 
+    /**
+     * 自身のセンサ情報が束縛されるフィールド.
+     */
     private SensorModel inputs;
 
+    /**
+     * 狙うべき旗の位置と自身の角度が代入されるフィールド.
+     */
     private double targetAngle;
 
+    /**
+     * こいつが狙うべき旗の位置が束縛されるフィールド.
+     */
     private Vector2d targetFlag;
+
+    /**
+     * バックでbackwardleftとかを押しっぱなしにして収束する旋回速度
+     * ここを最低速度としてあらゆる行動を行う
+     */
+    private final double lowestTurnSpeed = -2.564335;
+
+    /**
+     * 当たり判定の距離を対角線で割った値
+     * getDistanceシリーズは対角線で割った値が求められるので作った
+     */
+    private final double collideDetection = 20.0/Math.sqrt(320000.0D);
 
     private Analyst analyst;
 
@@ -33,6 +54,48 @@ public class AIController implements Controller, Constants {
 
         this.targetAngle = Calculator.getAngleBetweenCarAndWaypoint(this, this.targetFlag);
 
+    }
+
+    /**
+     * isAbleToBrake 今からブレーキして目標速度まで落とすと止まり切れるか返す
+     *
+     * 　　n      ♪キボウノハナー
+     *　 _H
+     *　巛 ｸ　 ノﾚzz　　　　　　　　俺は止まんねえからよ...
+     *　 F｜　幺 ﾐwｯﾐ
+     *　｜｜　ヽﾚvvｲ             お前らが止まんねえ限り、
+     *　｜ ￣⌒＼二ヽ＿
+     *　 ￣￣Ｙ　ミ　 /|       俺はその先にいるぞ！！！！！
+     *　　　 ｜　 |　｜|
+     *　　　 /　　|　｜|
+     *　　　/　　 |　 L|           だからよ...
+     *　　　＼＿_/|＿/(ヽ
+     *　　　 ｜　　 ｜/ぐ)
+     *　　　 ｜　 ﾊ ∧＼≫        止まるんじゃねえぞ...
+     *　　　 ｜　/ Ｖ∧
+     *　　　 ｜ ｜　Ｖ｜
+     * @param inputs センサ情報
+     * @return true 止まり切れる : false 止まり切れない(ブレーキしなさい)
+     */
+    private boolean isAbleToBrake(){
+        double finPoint = (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag) - this.collideDetection) * Math.sqrt(320000.0D);
+        double speed = this.inputs.getSpeed();
+        double targetSpeed = 0;
+        if(Calculator.areTheyEqual(this.targetFlag, this.inputs.getNextWaypointPosition())){
+            targetSpeed = this.lowestTurnSpeed;
+        }
+        double distance = 0;
+        if(targetSpeed < speed) return true;
+
+        while(true){
+            if(speed >= targetSpeed) break;
+            distance -= speed;
+            speed += 0.425;
+        }
+
+        if(distance > finPoint) return false;
+
+        return true;
     }
 
     /**
@@ -57,10 +120,14 @@ public class AIController implements Controller, Constants {
             command = backwardleft;
 
             if(this.targetAngle > 3.0) command = backward;
+
+            if(!this.isAbleToBrake()) command = forwardleft;
         }else{
             command = backwardright;
 
             if(this.targetAngle < -3.0) command = backward;
+
+            if(!this.isAbleToBrake()) command = forwardright;
         }
 
         //System.err.println(inputs.getClass());
@@ -68,23 +135,6 @@ public class AIController implements Controller, Constants {
         //DataCenter.getSingleton().println();
 
         return command;
-    }
-
-    /**
-     * Vector2dクラスの同値比較を行うメソッド
-     * @param a 一つ目のVector2dインスタンス
-     * @param b 二つ目
-     * @return 同値ならtrue、違うならfalse
-     */
-    public boolean eq(Vector2d a, Vector2d b){
-        if(a == null || b == null) return false;
-
-        if(a == b) return true;
-        if(a.equals(b)) return true;
-
-        if(a.x == b.x && a.y == b.y) return true;
-
-        return false;
     }
 
     /**
