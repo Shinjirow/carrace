@@ -3,11 +3,9 @@ import simplerace.*;
 
 /**
  * AIController
- * Todo
- * それぞれAIControllerに次旗、次次旗にかかる時間を計算させる
- * その計算結果をデータセンタに送る
- * データセンタがそれを見て、どちらの旗に行くべきかオペレーションする
- * 行くべき旗がわかるので、そちらに進む
+ * now : 単純に次の旗との距離が近い方に向かわせる
+ * Todo : 判定に自身の角度も使いたい
+ * 先着、次着の判定もさせたい、先着なら回り込むように旗を取らせたい
  */
 
 public class AIController implements Controller, Constants {
@@ -108,6 +106,8 @@ public class AIController implements Controller, Constants {
      */
     public int control (SensorModel inputs) {
 
+        //this.turnStartProcess(inputs);
+
         int command = neutral;
 
         this.update(inputs);
@@ -125,6 +125,8 @@ public class AIController implements Controller, Constants {
 
             if(!this.isAbleToBrake()) command = forwardright;
         }
+
+        //this.turnEndProcess();
 
         return command;
     }

@@ -78,6 +78,7 @@ public class DataCenter extends Object{
         double distance;
         for(int i = 0;i < this.controllers.size();i++){
             distance = this.controllers.get(i).getSensor().getDistanceToNextWaypoint();
+            distance += 2.0 / Math.abs(Calculator.getAngleBetweenCarAndWaypoint(this.controllers.get(i), this.nextWaypoint));
             if(distance < min){
                 min = distance;
                 index = i;

@@ -38,7 +38,7 @@ public class Analyst{
 			if(Analyst.scoreHist.size() < this.decideMaxScore()) for(int i = 0; i < this.decideMaxScore(); i++) Analyst.scoreHist.add(Integer.valueOf(0));
 		}
 		public boolean isFinalRound(){
-			int finalRoundNumber = 200;
+			int finalRoundNumber = 199;
 			return Analyst.round == finalRoundNumber;
 		}
 
