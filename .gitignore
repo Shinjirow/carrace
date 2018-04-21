@@ -1,3 +1,5 @@
 .idea
 *.class
 .vscode
+results.txt
+null
