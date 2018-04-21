@@ -44,25 +44,18 @@ public class AIController implements Controller, Constants {
      */
     private Analyst analyst;
 
-    /**
-     * データセンタに登録されたかを示す
-     */
-    private boolean added = false;
-
     public void reset(){
         this.analyst = new Analyst();
     }
 
     /**
-     * フィールドを埋める
+     * 色々更新する
      */
-    private void setField(SensorModel inputs){
+    private void update(SensorModel inputs){
         this.inputs = inputs;
-
+        DataCenter.getSingleton().update(this);
         this.targetFlag = DataCenter.getSingleton().operation(this);
-
         this.targetAngle = Calculator.getAngleBetweenCarAndWaypoint(this, this.targetFlag);
-
     }
 
     /**
@@ -83,16 +76,15 @@ public class AIController implements Controller, Constants {
      *　　　 ｜　 ﾊ ∧＼≫        止まるんじゃねえぞ...
      *　　　 ｜　/ Ｖ∧
      *　　　 ｜ ｜　Ｖ｜
-     * @param inputs センサ情報
      * @return true 止まり切れる : false 止まり切れない(ブレーキしなさい)
      */
     private boolean isAbleToBrake(){
         double finPoint = (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag) - this.collideDetection) * Math.sqrt(320000.0D);
         double speed = this.inputs.getSpeed();
         double targetSpeed = 0;
-        if(Calculator.areTheyEqual(this.targetFlag, this.inputs.getNextWaypointPosition())){
+        if(Calculator.areTheyEqual(this.targetFlag, this.inputs.getNextWaypointPosition()))
             targetSpeed = this.lowestTurnSpeed;
-        }
+        
         double distance = 0;
         if(targetSpeed < speed) return true;
 
@@ -116,14 +108,9 @@ public class AIController implements Controller, Constants {
      */
     public int control (SensorModel inputs) {
 
-        if(!added) {
-            DataCenter.getSingleton().register(this);
-            this.added = true;
-        }
-
         int command = neutral;
 
-        this.setField(inputs);
+        this.update(inputs);
 
         if(this.targetAngle > 0){
             command = backwardleft;

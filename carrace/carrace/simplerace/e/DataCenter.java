@@ -22,6 +22,16 @@ public class DataCenter extends Object{
     private List<AIController> controllers;
 
     /**
+     * 次の旗の位置が束縛されるフィールド.
+     */
+    private Vector2d nextWaypoint;
+
+    /**
+     * 次の次の旗の位置が束縛されるフィールド.
+     */
+    private Vector2d nextNextWaypoint;
+
+    /**
      * データセンタのコンストラクタである.
      * シングルトンデザインパターンを採用するため、private修飾子をつけている.
      */
@@ -36,39 +46,47 @@ public class DataCenter extends Object{
      * @return 自身のインスタンス
      */
     public static DataCenter getSingleton() {
-        if(DataCenter.singleton == null) DataCenter.singleton = new DataCenter();
+        if(DataCenter.singleton == null)
+            DataCenter.singleton = new DataCenter();
 
         return DataCenter.singleton;
     }
 
     /**
-     * AIControllerを登録する
-     * @param aController
+     * AIControllerのセンサ情報を元にアップデートする
+     * @param anAIController : アップデート要求をしてきたAIController
      */
-    public void register(AIController aController){
-        controllers.add(aController);
+    public void update(AIController anAIController){
+        if(this.controllers.indexOf(anAIController) == -1)
+            this.controllers.add(anAIController);
+        
+        this.nextWaypoint = anAIController.getSensor().getNextWaypointPosition();
+        this.nextNextWaypoint = anAIController.getSensor().getNextNextWaypointPosition();
 
         return;
     }
 
     /**
-     * オペレーションを行う.
+     * 受け取ったAIControllerに対してオペレーションを行う.
+     * @param anAIController : AIController
      * @return そのAIが狙うべき旗の情報
      */
     public Vector2d operation(AIController anAIController){
 
         double min = 500000000.0;
         int index = -1;
-
+        double distance;
         for(int i = 0;i < this.controllers.size();i++){
-            if(this.controllers.get(i).getSensor().getDistanceToNextWaypoint() < min){
-                min = this.controllers.get(i).getSensor().getDistanceToNextWaypoint();
+            distance = this.controllers.get(i).getSensor().getDistanceToNextWaypoint();
+            if(distance < min){
+                min = distance;
                 index = i;
             }
         }
 
-        if(anAIController != this.controllers.get(index)) return anAIController.getSensor().getNextNextWaypointPosition();
+        if(anAIController != this.controllers.get(index))
+            return this.nextNextWaypoint;
 
-        return anAIController.getSensor().getNextWaypointPosition();
+        return this.nextWaypoint;
     }
 }
