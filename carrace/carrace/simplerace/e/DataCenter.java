@@ -58,6 +58,18 @@ public class DataCenter extends Object{
      */
     public Vector2d operation(AIController anAIController){
 
+        double min = 500000000.0;
+        int index = -1;
+
+        for(int i = 0;i < this.controllers.size();i++){
+            if(this.controllers.get(i).getSensor().getDistanceToNextWaypoint() < min){
+                min = this.controllers.get(i).getSensor().getDistanceToNextWaypoint();
+                index = i;
+            }
+        }
+
+        if(anAIController != this.controllers.get(index)) return anAIController.getSensor().getNextNextWaypointPosition();
+
         return anAIController.getSensor().getNextWaypointPosition();
     }
 }

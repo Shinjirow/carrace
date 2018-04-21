@@ -63,7 +63,7 @@ public class AIController implements Controller, Constants {
             if(this.targetAngle < -3.0) command = backward;
         }
 
-        System.err.println(inputs.getClass());
+        //System.err.println(inputs.getClass());
 
         //DataCenter.getSingleton().println();
 
