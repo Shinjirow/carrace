@@ -67,6 +67,7 @@ public class DataCenter extends Object{
     }
 
     /**
+     * operation
      * 受け取ったAIControllerに対してオペレーションを行う.
      * @param anAIController : AIController
      * @return そのAIが狙うべき旗の情報
@@ -84,10 +85,30 @@ public class DataCenter extends Object{
                 index = i;
             }
         }
+        int frame = Calculator.simulate(anAIController, this.nextWaypoint);
+        System.err.println(anAIController.toString() + ": " + frame);
 
         if(anAIController != this.controllers.get(index))
             return this.nextNextWaypoint;
 
         return this.nextWaypoint;
+    }
+
+    /**
+     * getFirstFlag
+     * NextWaypointの情報を返す
+     * @return NextWaypoint : Vector2d
+     */
+    public Vector2d getFirstFlag(){
+        return this.nextWaypoint;
+    }
+
+    /**
+     * getFirstFlag
+     * NextNextWaypointの情報を返す
+     * @return NextNextWaypoint : Vector2d
+     */
+    public Vector2d getSecondFlag(){
+        return this.nextNextWaypoint;
     }
 }

@@ -189,6 +189,7 @@ public class AIController implements Controller, Constants {
 
         sb.append("AIController");
         sb.append(this.hashCode());
+        sb.append(" : ");
         return sb.toString();
     }
 

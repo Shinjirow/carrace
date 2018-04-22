@@ -6,12 +6,27 @@ import simplerace.*;
  */
 public class Calculator extends Object{
 
+    /**
+     * DIAGONAL
+     * 対角線の値 割ったりかけたりして使うといいと思う
+     */
     public static final double DIAGONAL = Math.sqrt(320000.0D);
 
+    /**
+     * バックでbackwardleftとかを押しっぱなしにして収束する旋回速度
+     * ここを最低速度としてあらゆる行動を行う
+     */
+    private static final double lowestTurnSpeed = -2.564335;
+
+    /**
+     * コンストラクタ
+     * 現在はインスタンスを作る必要がないので中身は空
+     */
     public Calculator(){
     }
 
     /**
+     * getAngleToTwoPositions
      * 二つのポジション間の角度を求める
      * @param from : Vector2d
      * @param to : Vector2d
@@ -25,6 +40,7 @@ public class Calculator extends Object{
     }
 
     /**
+     * getAngleBetweenCarAndWaypoint
      * AIControllerとあるVector2dとの角度を求める
      * @param from :  AIController
      * @param waypoint : Vector2d
@@ -39,6 +55,7 @@ public class Calculator extends Object{
     }
 
     /**
+     * getDistanceBetweenCarAndWaypoint
      * AIControllerとVector2dとの距離を求める
      * @return 距離を対角線で割った値
      */
@@ -47,6 +64,7 @@ public class Calculator extends Object{
     }
 
     /**
+     * areTheyEqual
      * Vector2dクラスの同値比較を行うメソッド
      * @param a 一つ目のVector2dインスタンス
      * @param b 二つ目
@@ -61,5 +79,29 @@ public class Calculator extends Object{
         if(a.x == b.x && a.y == b.y) return true;
 
         return false;
+    }
+
+    /**
+     * simlate
+     * ここからそこまで何フレームでいけるの？を計算してくれるメソッド
+     * 現在は距離のみで判定する
+     */
+    public static int simulate(AIController from, Vector2d waypoint){
+        int estimate = 0;
+        double distance = Calculator.getDistanceBetweenCarAndWaypoint(from, waypoint) * Calculator.DIAGONAL - 20.0;
+        double p1 = 0.0, p2 = distance;
+        double currentSpeed = from.getSensor().getSpeed();
+        double bottomSpeed = areTheyEqual(waypoint, DataCenter.getSingleton().getFirstFlag()) ? Calculator.lowestTurnSpeed : 0.0;
+
+        for(;;estimate+=2){
+            if(p1 > p2) break;
+            p1 += -currentSpeed;
+            p2 -= -bottomSpeed;
+            currentSpeed += -0.2;
+            bottomSpeed += -0.4;
+            //System.err.println(p1 + ", " + p2);
+        }
+
+        return estimate;
     }
 }
