@@ -24,12 +24,7 @@ public class DataCenter extends Object{
     /**
      * 次の旗の位置が束縛されるフィールド.
      */
-    private Vector2d nextWaypoint;
-
-    /**
-     * 次の次の旗の位置が束縛されるフィールド.
-     */
-    private Vector2d nextNextWaypoint;
+    private List<Vector2d> waypoints;
 
     /**
      * データセンタのコンストラクタである.
@@ -37,7 +32,8 @@ public class DataCenter extends Object{
      */
     private DataCenter(){
         this.controllers = new ArrayList<>();
-
+        this.waypoints = new ArrayList<>(2);
+        this.waypoints.add(null); this.waypoints.add(null);
         return;
     }
 
@@ -59,9 +55,12 @@ public class DataCenter extends Object{
     public void update(AIController anAIController){
         if(this.controllers.indexOf(anAIController) == -1)
             this.controllers.add(anAIController);
+
+        this.waypoints.set(0, anAIController.getSensor().getNextWaypointPosition());
+        this.waypoints.set(1, anAIController.getSensor().getNextNextWaypointPosition());
         
-        this.nextWaypoint = anAIController.getSensor().getNextWaypointPosition();
-        this.nextNextWaypoint = anAIController.getSensor().getNextNextWaypointPosition();
+        // this.waypoints.get(0) = anAIController.getSensor().getNextWaypointPosition();
+        // this.waypoints.get(1) = anAIController.getSensor().getNextNextWaypointPosition();
 
         return;
     }
@@ -75,23 +74,33 @@ public class DataCenter extends Object{
     public Vector2d operation(AIController anAIController){
 
         double min = 500000000.0;
+        int mini = 500000000;
         int index = -1;
         double distance;
+        int disti;
         for(int i = 0;i < this.controllers.size();i++){
+            /*
             distance = this.controllers.get(i).getSensor().getDistanceToNextWaypoint();
-            distance += 2.0 / Math.abs(Calculator.getAngleBetweenCarAndWaypoint(this.controllers.get(i), this.nextWaypoint));
+            distance += 2.0 / Math.abs(Calculator.getAngleBetweenCarAndWaypoint(this.controllers.get(i), this.waypoints.get(0)));
             if(distance < min){
                 min = distance;
                 index = i;
             }
+            */
+            disti = Calculator.simulate(this.controllers.get(i), this.waypoints.get(0));
+            if(disti < mini){
+                mini = disti;
+                index = i;
+            }
+
         }
-        int frame = Calculator.simulate(anAIController, this.nextWaypoint);
-        System.err.println(anAIController.toString() + ": " + frame);
+        int frame = Calculator.simulate(anAIController, this.waypoints.get(0));
+        // System.err.println(anAIController.toString() + ": " + frame);
 
         if(anAIController != this.controllers.get(index))
-            return this.nextNextWaypoint;
+            return this.waypoints.get(1);
 
-        return this.nextWaypoint;
+        return this.waypoints.get(0);
     }
 
     /**
@@ -100,7 +109,7 @@ public class DataCenter extends Object{
      * @return NextWaypoint : Vector2d
      */
     public Vector2d getFirstFlag(){
-        return this.nextWaypoint;
+        return this.waypoints.get(0);
     }
 
     /**
@@ -109,6 +118,6 @@ public class DataCenter extends Object{
      * @return NextNextWaypoint : Vector2d
      */
     public Vector2d getSecondFlag(){
-        return this.nextNextWaypoint;
+        return this.waypoints.get(1);
     }
 }

@@ -89,6 +89,7 @@ public class Calculator extends Object{
     public static int simulate(AIController from, Vector2d waypoint){
         int estimate = 0;
         double distance = Calculator.getDistanceBetweenCarAndWaypoint(from, waypoint) * Calculator.DIAGONAL - 20.0;
+        distance += 2.0 / Math.abs(Calculator.getAngleBetweenCarAndWaypoint(from, waypoint));
         double p1 = 0.0, p2 = distance;
         double currentSpeed = from.getSensor().getSpeed();
         double bottomSpeed = areTheyEqual(waypoint, DataCenter.getSingleton().getFirstFlag()) ? Calculator.lowestTurnSpeed : 0.0;
