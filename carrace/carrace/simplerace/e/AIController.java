@@ -97,6 +97,28 @@ public class AIController implements Controller, Constants {
         return true;
     }
 
+    private boolean isTooClose(){
+        double mergin = 12.5 + 20.0;
+        //System.err.println(Math.abs(this.targetAngle));
+        
+        return (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag)*Math.sqrt(320000.0D) < mergin && Math.abs(this.targetAngle) < Math.PI*0.7) ? true : false;
+    }
+
+    /**
+     * reverseLR
+     * コマンドの左右を反転させる
+     */
+    private int reverseLR(int cmd){
+        int command = cmd;
+        if(cmd == forwardleft)        command = forwardright;
+        else if(cmd == forwardright)  command = forwardleft;
+        else if(cmd == backwardright) command = backwardleft;
+        else if(cmd == backwardleft)  command = backwardright;
+        else if(cmd == left)          command = right;
+        else if(cmd == right)         command = left;
+        return command;
+    }
+
     /**
      * ControllerをImplementsすると必要になる
      * 実際に操縦を行うメソッド
@@ -112,18 +134,24 @@ public class AIController implements Controller, Constants {
 
         this.update(inputs);
 
+        //System.err.println(this.isTooClose());
+
         if(this.targetAngle > 0){
             command = backwardleft;
 
             if(this.targetAngle > 3.0) command = backward;
 
             if(!this.isAbleToBrake()) command = forwardleft;
+
+            if(this.isTooClose()) command = this.reverseLR(command);
         }else{
             command = backwardright;
 
             if(this.targetAngle < -3.0) command = backward;
 
             if(!this.isAbleToBrake()) command = forwardright;
+
+            if(this.isTooClose()) command = this.reverseLR(command);
         }
 
         //this.turnEndProcess();
