@@ -25,6 +25,7 @@ public class Calculator extends Object{
      * @param from : Vector2d
      * @param to : Vector2d
      * @return 角度
+     * -π <= angle <= π
      */
     public static double getAngleToTwoPositions(Vector2d from, Vector2d to) {
         double xDiff = to.x - from.x;
@@ -39,6 +40,7 @@ public class Calculator extends Object{
      * @param from :  AIController
      * @param waypoint : Vector2d
      * @return 角度
+     * -π <= angle <= π
      */
     public static double getAngleBetweenCarAndWaypoint(AIController from, Vector2d waypoint){
         Vector2d position = from.getSensor().getPosition();
@@ -51,6 +53,8 @@ public class Calculator extends Object{
     /**
      * getDistanceBetweenCarAndWaypoint
      * AIControllerとVector2dとの距離を求める
+     * @param from : AIController
+     * @param waypoint : Waypoint
      * @return 距離を対角線で割った値
      */
     public static double getDistanceBetweenCarAndWaypoint(AIController from, Vector2d waypoint){

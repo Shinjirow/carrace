@@ -49,7 +49,7 @@ public class DataCenter extends Object{
     }
 
     /**
-     * AIControllerのセンサ情報を元にアップデートする
+     * AIControllerからのセンサ情報を元にアップデートする
      * @param anAIController : アップデート要求をしてきたAIController
      */
     public void update(AIController anAIController){

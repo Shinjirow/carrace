@@ -58,6 +58,7 @@ public class AIController implements Controller, Constants {
 
     /**
      * 色々更新する
+     * @param inputs : センサ情報
      */
     private void update(SensorModel inputs){
         this.inputs = inputs;
@@ -105,6 +106,11 @@ public class AIController implements Controller, Constants {
         return (distance > finPoint) ? false : true;
     }
 
+    /**
+     * isTooClose
+     * 目的旗が自身の最小旋回半径より内側にいるかをチェックする
+     * @return true 内側にいる場合 : false 外側にいる場合
+     */
     private boolean isTooClose(){
         if(this.inputs.getSpeed() < - 3.5) return false;
         double mergin = 12.5 + 20.0;
@@ -115,6 +121,8 @@ public class AIController implements Controller, Constants {
     /**
      * reverseLR
      * コマンドの左右を反転させる
+     * @param cmd コマンド
+     * @return コマンドを左右反転させた値
      */
     private int reverseLR(int cmd){
         for(int i = 0;i < commands.length;i++){
@@ -129,6 +137,8 @@ public class AIController implements Controller, Constants {
     /**
      * reverseFW
      * コマンドの前後を反転させる
+     * @param cmd コマンド
+     * @return コマンドを前後反転させた値
      */
     private int reverseFW(int cmd){
         for(int i = 0;i < commands.length;i++){
@@ -168,21 +178,32 @@ public class AIController implements Controller, Constants {
 
         //this.turnEndProcess();
 
-        if(DEBUG){
-            try{
-                Thread.sleep(1000);
-            }catch(InterruptedException e){
-                e.printStackTrace();
-            }
-        }
+        if(DEBUG) this.doSlowly(1000);
 
         return command;
+    }
+
+    /**
+     * doSlowly
+     * とりあえずvalミリ秒sleepさせる
+     * 時間が欲しいときにねじ込んでください
+     * @param val : sleepさせる時間 [ms]
+     */
+    private void doSlowly(long val){
+        try{
+            Thread.sleep(val);
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
+        return;
     }
 
     /*-------------------------Analyze------------------------------*/
 
     /**
      * ターン開始時に行う操作
+     * @param inputs センサ情報
      * @author takaesumizuki
      */
     private void turnStartProcess(SensorModel inputs) {
@@ -211,7 +232,7 @@ public class AIController implements Controller, Constants {
 
     /**
      * 自身のセンサ情報を返す.
-     * @return
+     * @return 自身のセンサ情報
      */
     public SensorModel getSensor() {
         return this.inputs;
@@ -219,7 +240,8 @@ public class AIController implements Controller, Constants {
 
     /**
      * 自身から1つめのWaypointへの角度を返す.
-     * @return
+     * @return 自身から1つ目のWaypointへの角度
+     * -π <= returnValue <= π
      */
     protected double getTargetAngle(){
         return this.targetAngle;
@@ -243,7 +265,7 @@ public class AIController implements Controller, Constants {
 
     /**
      * 自身を表すハッシュ値を応答する
-     * @return
+     * @return 自身のハッシュ値
      */
     @Override
     public int hashCode(){
