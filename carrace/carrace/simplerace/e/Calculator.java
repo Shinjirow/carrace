@@ -86,6 +86,7 @@ public class Calculator extends Object{
      * ここからそこまで何フレームでいけるの？を計算してくれるメソッド
      * 現在は距離のみで判定する
      */
+    /*
     public static int simulate(AIController from, Vector2d waypoint){
         int estimate = 0;
         double distance = Calculator.getDistanceBetweenCarAndWaypoint(from, waypoint) * Calculator.DIAGONAL - 20.0;
@@ -105,4 +106,5 @@ public class Calculator extends Object{
 
         return estimate;
     }
+    */
 }

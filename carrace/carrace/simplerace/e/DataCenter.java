@@ -77,25 +77,15 @@ public class DataCenter extends Object{
         int mini = 500000000;
         int index = -1;
         double distance;
-        int disti;
         for(int i = 0;i < this.controllers.size();i++){
-            /*
+            
             distance = this.controllers.get(i).getSensor().getDistanceToNextWaypoint();
             distance += 2.0 / Math.abs(Calculator.getAngleBetweenCarAndWaypoint(this.controllers.get(i), this.waypoints.get(0)));
             if(distance < min){
                 min = distance;
                 index = i;
             }
-            */
-            disti = Calculator.simulate(this.controllers.get(i), this.waypoints.get(0));
-            if(disti < mini){
-                mini = disti;
-                index = i;
-            }
-
         }
-        int frame = Calculator.simulate(anAIController, this.waypoints.get(0));
-        // System.err.println(anAIController.toString() + ": " + frame);
 
         if(anAIController != this.controllers.get(index))
             return this.waypoints.get(1);
