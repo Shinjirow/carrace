@@ -3,12 +3,14 @@ import simplerace.*;
 
 /**
  * AIController
- * now : 単純に次の旗との距離が近い方に向かわせる
- * Todo : 判定に自身の角度も使いたい
- * 先着、次着の判定もさせたい、先着なら回り込むように旗を取らせたい
  */
 
 public class AIController implements Controller, Constants {
+
+    /**
+     * デバッグ用変数
+     */
+    private boolean DEBUG = false;
 
     /**
      * 自身のセンサ情報が束縛されるフィールド.
@@ -35,7 +37,15 @@ public class AIController implements Controller, Constants {
      * 当たり判定の距離を対角線で割った値
      * getDistanceシリーズは対角線で割った値が求められるので作った
      */
-    private final double collideDetection = 20.0/Math.sqrt(320000.0D);
+    private final double collideDetection = 20.0 / Calculator.DIAGONAL;
+
+    /**
+     * コマンドが入る配列
+     * 自車を上から見下ろした時の8方位+ニュートラル
+     */
+    int[][] commands = {{forwardleft,  forward,  forwardright},
+                        {left,         neutral,  right},
+                        {backwardleft, backward, backwardright}};
 
     /**
      * 統計情報を取る
@@ -77,11 +87,11 @@ public class AIController implements Controller, Constants {
      * @return true 止まり切れる : false 止まり切れない(ブレーキしなさい)
      */
     private boolean isAbleToBrake(){
-        double finPoint = (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag) - this.collideDetection) * Math.sqrt(320000.0D);
+        double finPoint = (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag) - this.collideDetection) * Calculator.DIAGONAL;
         double speed = this.inputs.getSpeed();
         double targetSpeed = 0;
-        if(Calculator.areTheyEqual(this.targetFlag, this.inputs.getNextWaypointPosition()))
-            targetSpeed = this.lowestTurnSpeed;
+        if(Calculator.areTheyEqual(this.targetFlag, DataCenter.getSingleton().getFirstFlag()))
+            targetSpeed = this.lowestTurnSpeed - 2.0;
         
         double distance = 0;
         if(targetSpeed < speed) return true;
@@ -92,16 +102,14 @@ public class AIController implements Controller, Constants {
             speed += 0.425;
         }
 
-        if(distance > finPoint) return false;
-
-        return true;
+        return (distance > finPoint) ? false : true;
     }
 
     private boolean isTooClose(){
+        if(this.inputs.getSpeed() < - 3.5) return false;
         double mergin = 12.5 + 20.0;
-        //System.err.println(Math.abs(this.targetAngle));
         
-        return (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag)*Math.sqrt(320000.0D) < mergin && Math.abs(this.targetAngle) < Math.PI*0.7) ? true : false;
+        return (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag)*Calculator.DIAGONAL < mergin && Math.abs(this.targetAngle) < Math.PI*0.8) ? true : false;
     }
 
     /**
@@ -109,14 +117,27 @@ public class AIController implements Controller, Constants {
      * コマンドの左右を反転させる
      */
     private int reverseLR(int cmd){
-        int command = cmd;
-        if(cmd == forwardleft)        command = forwardright;
-        else if(cmd == forwardright)  command = forwardleft;
-        else if(cmd == backwardright) command = backwardleft;
-        else if(cmd == backwardleft)  command = backwardright;
-        else if(cmd == left)          command = right;
-        else if(cmd == right)         command = left;
-        return command;
+        for(int i = 0;i < commands.length;i++){
+            for(int j = 0;j < commands[i].length;j++){
+                if(j == 1) continue;
+                if(cmd == commands[i][j]) return commands[i][commands[i].length - j - 1];
+            }
+        }
+        return cmd;
+    }
+
+    /**
+     * reverseFW
+     * コマンドの前後を反転させる
+     */
+    private int reverseFW(int cmd){
+        for(int i = 0;i < commands.length;i++){
+            for(int j = 0;j < commands[i].length;j++){
+                if(i == 1) continue;
+                if(cmd == commands[i][j]) return commands[commands.length - 1 - i][j];
+            }
+        }
+        return cmd;
     }
 
     /**
@@ -134,27 +155,26 @@ public class AIController implements Controller, Constants {
 
         this.update(inputs);
 
-        //System.err.println(this.isTooClose());
-
         if(this.targetAngle > 0){
             command = backwardleft;
-
             if(this.targetAngle > 3.0) command = backward;
-
-            if(!this.isAbleToBrake()) command = forwardleft;
-
-            if(this.isTooClose()) command = this.reverseLR(command);
         }else{
             command = backwardright;
-
             if(this.targetAngle < -3.0) command = backward;
-
-            if(!this.isAbleToBrake()) command = forwardright;
-
-            if(this.isTooClose()) command = this.reverseLR(command);
         }
 
+        if(!this.isAbleToBrake()) command = this.reverseFW(command);
+        if(this.isTooClose()) command = this.reverseLR(command);
+
         //this.turnEndProcess();
+
+        if(DEBUG){
+            try{
+                Thread.sleep(1000);
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        }
 
         return command;
     }

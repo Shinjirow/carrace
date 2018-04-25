@@ -59,9 +59,6 @@ public class DataCenter extends Object{
         this.waypoints.set(0, anAIController.getSensor().getNextWaypointPosition());
         this.waypoints.set(1, anAIController.getSensor().getNextNextWaypointPosition());
         
-        // this.waypoints.get(0) = anAIController.getSensor().getNextWaypointPosition();
-        // this.waypoints.get(1) = anAIController.getSensor().getNextNextWaypointPosition();
-
         return;
     }
 
@@ -72,7 +69,6 @@ public class DataCenter extends Object{
      * @return そのAIが狙うべき旗の情報
      */
     public Vector2d operation(AIController anAIController){
-
         double min = 500000000.0;
         int mini = 500000000;
         int index = -1;
@@ -87,10 +83,7 @@ public class DataCenter extends Object{
             }
         }
 
-        if(anAIController != this.controllers.get(index))
-            return this.waypoints.get(1);
-
-        return this.waypoints.get(0);
+        return (anAIController != this.controllers.get(index)) ? this.getSecondFlag() : this.getFirstFlag();
     }
 
     /**

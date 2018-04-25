@@ -13,12 +13,6 @@ public class Calculator extends Object{
     public static final double DIAGONAL = Math.sqrt(320000.0D);
 
     /**
-     * バックでbackwardleftとかを押しっぱなしにして収束する旋回速度
-     * ここを最低速度としてあらゆる行動を行う
-     */
-    private static final double lowestTurnSpeed = -2.564335;
-
-    /**
      * コンストラクタ
      * 現在はインスタンスを作る必要がないので中身は空
      */
