@@ -13,19 +13,9 @@ public class AIController implements Controller, Constants {
     private boolean DEBUG = false;
 
     /**
-     * 自身のセンサ情報が束縛されるフィールド.
+     * 自身についての情報が格納された変数(フィールドをwrapした)
      */
-    private SensorModel inputs;
-
-    /**
-     * 狙うべき旗の位置と自身の角度が代入されるフィールド.
-     */
-    private double targetAngle;
-
-    /**
-     * こいつが狙うべき旗の位置が束縛されるフィールド.
-     */
-    private Vector2d targetFlag;
+    CarInformation anInformation = new CarInformation();
 
     /**
      * バックでbackwardleftとかを押しっぱなしにして収束する旋回速度
@@ -43,9 +33,9 @@ public class AIController implements Controller, Constants {
      * コマンドが入る配列
      * 自車を上から見下ろした時の8方位+ニュートラル
      */
-    int[][] commands = {{forwardleft,  forward,  forwardright},
-                        {left,         neutral,  right},
-                        {backwardleft, backward, backwardright}};
+    private int[][] commands = {{forwardleft,  forward,  forwardright},
+                                {left,         neutral,  right},
+                                {backwardleft, backward, backwardright}};
 
     /**
      * 統計情報を取る
@@ -61,10 +51,21 @@ public class AIController implements Controller, Constants {
      * @param inputs : センサ情報
      */
     private void update(SensorModel inputs){
-        this.inputs = inputs;
+        this.anInformation.setSensor(inputs);
         DataCenter.getSingleton().update(this);
-        this.targetFlag = DataCenter.getSingleton().operation(this);
-        this.targetAngle = Calculator.getAngleBetweenCarAndWaypoint(this, this.targetFlag);
+        this.anInformation.setTargetFlag(DataCenter.getSingleton().operation(this));
+        this.anInformation.setTargetAngle(Calculator.getAngleBetweenCarAndWaypoint(this, this.anInformation.getTargetFlag()));
+
+        return;
+    }
+
+    /**
+     * isFacingTheFlag
+     * 自身が十分旗の方向を向いているか得る
+     * @return true 向いている : false 向いていない
+     */
+    private boolean isFacingTheFlag(){
+        return (Math.abs(this.anInformation.getTargetAngle()) > 3.0) ? true : false;
     }
 
     /**
@@ -88,10 +89,10 @@ public class AIController implements Controller, Constants {
      * @return true 止まり切れる : false 止まり切れない(ブレーキしなさい)
      */
     private boolean isAbleToBrake(){
-        double finPoint = (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag) - this.collideDetection) * Calculator.DIAGONAL;
-        double speed = this.inputs.getSpeed();
+        double finPoint = (Calculator.getDistanceBetweenCarAndWaypoint(this, this.anInformation.getTargetFlag()) - this.collideDetection) * Calculator.DIAGONAL;
+        double speed = this.anInformation.getSensor().getSpeed();
         double targetSpeed = 0;
-        if(Calculator.areTheyEqual(this.targetFlag, DataCenter.getSingleton().getFirstFlag()))
+        if(Calculator.areTheyEqual(this.anInformation.getTargetFlag(), DataCenter.getSingleton().getFirstFlag()))
             targetSpeed = this.lowestTurnSpeed - 2.0;
         
         double distance = 0;
@@ -112,10 +113,26 @@ public class AIController implements Controller, Constants {
      * @return true 内側にいる場合 : false 外側にいる場合
      */
     private boolean isTooClose(){
-        if(this.inputs.getSpeed() < - 3.5) return false;
+        if(this.anInformation.getSensor().getSpeed() < - 3.5) return false;
         double mergin = 12.5 + 20.0;
         
-        return (Calculator.getDistanceBetweenCarAndWaypoint(this, this.targetFlag)*Calculator.DIAGONAL < mergin && Math.abs(this.targetAngle) < Math.PI*0.8) ? true : false;
+        return (Calculator.getDistanceBetweenCarAndWaypoint(this, this.anInformation.getTargetFlag())*Calculator.DIAGONAL < mergin && Math.abs(this.anInformation.getTargetAngle()) < Math.PI*0.8) ? true : false;
+    }
+
+    /**
+     * doStraighten
+     * コマンドのがハンドルを切っていた場合、それを元に戻す
+     * @param cmd コマンド
+     * @return コマンドからハンドルを切った値
+     */
+    private int doStraighten(int cmd){
+        for(int i = 0;i < this.commands.length;i++){
+            if(i == 1) continue;
+            for(int j = 0;j < this.commands[i].length;j++){
+                if(cmd == this.commands[i][j]) return this.commands[i][1];
+            }
+        }
+        return cmd;
     }
 
     /**
@@ -125,10 +142,10 @@ public class AIController implements Controller, Constants {
      * @return コマンドを左右反転させた値
      */
     private int reverseLR(int cmd){
-        for(int i = 0;i < commands.length;i++){
-            for(int j = 0;j < commands[i].length;j++){
+        for(int i = 0;i < this.commands.length;i++){
+            for(int j = 0;j < this.commands[i].length;j++){
                 if(j == 1) continue;
-                if(cmd == commands[i][j]) return commands[i][commands[i].length - j - 1];
+                if(cmd == this.commands[i][j]) return this.commands[i][this.commands[i].length - j - 1];
             }
         }
         return cmd;
@@ -141,10 +158,10 @@ public class AIController implements Controller, Constants {
      * @return コマンドを前後反転させた値
      */
     private int reverseFW(int cmd){
-        for(int i = 0;i < commands.length;i++){
-            for(int j = 0;j < commands[i].length;j++){
+        for(int i = 0;i < this.commands.length;i++){
+            for(int j = 0;j < this.commands[i].length;j++){
                 if(i == 1) continue;
-                if(cmd == commands[i][j]) return commands[commands.length - 1 - i][j];
+                if(cmd == this.commands[i][j]) return this.commands[this.commands.length - 1 - i][j];
             }
         }
         return cmd;
@@ -165,14 +182,12 @@ public class AIController implements Controller, Constants {
 
         this.update(inputs);
 
-        if(this.targetAngle > 0){
+        if(this.anInformation.getTargetAngle() > 0)
             command = backwardleft;
-            if(this.targetAngle > 3.0) command = backward;
-        }else{
+        else
             command = backwardright;
-            if(this.targetAngle < -3.0) command = backward;
-        }
 
+        if(this.isFacingTheFlag()) command = this.doStraighten(command);
         if(!this.isAbleToBrake()) command = this.reverseFW(command);
         if(this.isTooClose()) command = this.reverseLR(command);
 
@@ -235,7 +250,7 @@ public class AIController implements Controller, Constants {
      * @return 自身のセンサ情報
      */
     public SensorModel getSensor() {
-        return this.inputs;
+        return this.anInformation.getSensor();
     }
 
     /**
@@ -244,7 +259,7 @@ public class AIController implements Controller, Constants {
      * -π <= returnValue <= π
      */
     protected double getTargetAngle(){
-        return this.targetAngle;
+        return this.anInformation.getTargetAngle();
     }
 
     /*--------------------------------------------------------------*/
