@@ -1,6 +1,12 @@
 package simplerace.e;
 import simplerace.*;
 
+/**
+ * CarInformation
+ * AIControllerクラスに集約される(aggregation)クラス
+ * これまでAIControllerが持っていたフィールド群をwrapしており、
+ * getter, setterのみ備えるシンプルなクラスである.
+ */
 public class CarInformation extends Object implements Constants {
 
     /**

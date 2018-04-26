@@ -8,6 +8,7 @@ import java.util.ArrayList;
  * 2台のAIコントローラの情報を取りもつクラスである.
  * AIコントローラにgetterをいくつか整備することで、それらから必要な情報を得ている.
  * それらの情報を元に、2台のコントローラに、次に狙うべき旗を支持する.
+ * シングルトンデザインパターンを採用している.
  */
 public class DataCenter extends Object{
 

@@ -3,6 +3,9 @@ import simplerace.*;
 
 /**
  * AIController
+ * 今回のカーレースAIの主役となるクラスである.
+ * Controllerインタフェースを実装しており、control()メソッドを持つ.
+ * このcontrolメソッドをインテリジェントなものにし、旗をたくさん取らせることが目標である.
  */
 
 public class AIController implements Controller, Constants {
