@@ -78,31 +78,4 @@ public class Calculator extends Object{
 
         return false;
     }
-
-    /**
-     * simlate
-     * ここからそこまで何フレームでいけるの？を計算してくれるメソッド
-     * 現在は距離のみで判定する
-     */
-    /*
-    public static int simulate(AIController from, Vector2d waypoint){
-        int estimate = 0;
-        double distance = Calculator.getDistanceBetweenCarAndWaypoint(from, waypoint) * Calculator.DIAGONAL - 20.0;
-        distance += 2.0 / Math.abs(Calculator.getAngleBetweenCarAndWaypoint(from, waypoint));
-        double p1 = 0.0, p2 = distance;
-        double currentSpeed = from.getSensor().getSpeed();
-        double bottomSpeed = areTheyEqual(waypoint, DataCenter.getSingleton().getFirstFlag()) ? Calculator.lowestTurnSpeed : 0.0;
-
-        for(;;estimate+=2){
-            if(p1 > p2) break;
-            p1 += -currentSpeed;
-            p2 -= -bottomSpeed;
-            currentSpeed += -0.2;
-            bottomSpeed += -0.4;
-            //System.err.println(p1 + ", " + p2);
-        }
-
-        return estimate;
-    }
-    */
 }

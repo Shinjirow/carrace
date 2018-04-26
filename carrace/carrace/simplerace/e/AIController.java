@@ -15,7 +15,7 @@ public class AIController implements Controller, Constants {
     /**
      * 自身についての情報が格納された変数(フィールドをwrapした)
      */
-    CarInformation anInformation = new CarInformation();
+    private CarInformation anInformation = new CarInformation();
 
     /**
      * バックでbackwardleftとかを押しっぱなしにして収束する旋回速度
@@ -37,13 +37,7 @@ public class AIController implements Controller, Constants {
                                 {left,         neutral,  right},
                                 {backwardleft, backward, backwardright}};
 
-    /**
-     * 統計情報を取る
-     */
-    private Analyst analyst;
-
     public void reset(){
-        this.analyst = new Analyst();
     }
 
     /**
@@ -175,9 +169,6 @@ public class AIController implements Controller, Constants {
      * @return 操縦コマンド
      */
     public int control (SensorModel inputs) {
-
-        //this.turnStartProcess(inputs);
-
         int command = neutral;
 
         this.update(inputs);
@@ -190,8 +181,6 @@ public class AIController implements Controller, Constants {
         if(this.isFacingTheFlag()) command = this.doStraighten(command);
         if(!this.isAbleToBrake()) command = this.reverseFW(command);
         if(this.isTooClose()) command = this.reverseLR(command);
-
-        //this.turnEndProcess();
 
         if(DEBUG) this.doSlowly(1000);
 
@@ -209,35 +198,6 @@ public class AIController implements Controller, Constants {
             Thread.sleep(val);
         }catch(InterruptedException e){
             e.printStackTrace();
-        }
-
-        return;
-    }
-
-    /*-------------------------Analyze------------------------------*/
-
-    /**
-     * ターン開始時に行う操作
-     * @param inputs センサ情報
-     * @author takaesumizuki
-     */
-    private void turnStartProcess(SensorModel inputs) {
-        this.analyst.update(inputs); /* 統計情報をとる */
-
-        return;
-    }
-
-    /**
-     * ターン終了時に行う操作
-     * @author takaesumizuki
-     */
-    private void turnEndProcess() {
-        // this.analyst.printResult(); /* ターンごとの結果を表示したくないならコメントアウトしてください */
-        if (this.analyst.isLastTurn()) {
-            // this.analyst.printResult(); /* ゲームごと(ラウンドごと)の結果を表示したくないならコメントアウトしてください */
-            if (this.analyst.isFinalRound()) {
-                this.analyst.finalRoundProcess();/* 最終結果を表示したくないならコメントアウトしてください*/
-            }
         }
 
         return;
@@ -288,4 +248,3 @@ public class AIController implements Controller, Constants {
         return super.hashCode();
     }
 }
-
