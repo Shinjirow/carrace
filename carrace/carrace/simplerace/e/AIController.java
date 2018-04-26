@@ -93,7 +93,7 @@ public class AIController implements Controller, Constants {
         double speed = this.anInformation.getSensor().getSpeed();
         double targetSpeed = 0;
         if(Calculator.areTheyEqual(this.anInformation.getTargetFlag(), DataCenter.getSingleton().getFirstFlag()))
-            targetSpeed = this.lowestTurnSpeed - 2.0;
+            targetSpeed = this.lowestTurnSpeed - 1.5;
         
         double distance = 0;
         if(targetSpeed < speed) return true;

@@ -69,8 +69,17 @@ public class DataCenter extends Object{
      * @return そのAIが狙うべき旗の情報
      */
     public Vector2d operation(AIController anAIController){
+
+        return (anAIController != this.getCloserVehicle()) ? this.getSecondFlag() : this.getFirstFlag();
+    }
+
+    /**
+     * getCloserVehicle
+     * firstFlagにより近い方のvehicleを取得する
+     * @return firstFlagにもっとも近いAIController : AIController
+     */
+    private AIController getCloserVehicle(){
         double min = 500000000.0;
-        int mini = 500000000;
         int index = -1;
         double distance;
         for(int i = 0;i < this.controllers.size();i++){
@@ -83,7 +92,7 @@ public class DataCenter extends Object{
             }
         }
 
-        return (anAIController != this.controllers.get(index)) ? this.getSecondFlag() : this.getFirstFlag();
+        return this.controllers.get(index);
     }
 
     /**
