@@ -18,6 +18,9 @@ ct:
 do:
 	${J} ${MAINPROGRAM} ${AIPROGRAM} ${AIPROGRAM}
 
+do1:
+	${J} ${MAINPROGRAM} ${AIPROGRAM}
+
 test:
 	${J} ${MAINPROGRAM} ${TESTPROGRAM}
 
@@ -29,3 +32,6 @@ help:
 
 stats:
 	${J} simplerace.Stats ${AIPROGRAM} ${AIPROGRAM}
+
+stats1:
+	${J} simplerace.Stats ${AIPROGRAM}
